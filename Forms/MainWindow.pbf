@@ -10,6 +10,8 @@
 Global MainWindow
 
 Global Image_ComputerIcon, Text_Introduction, Text_Computer, Text_ComputerName, Button_ExportAsFile, Text_User, Text_UserName, Frame_Method, Image_CSV, Image_Error, Hyperlink_ExportFolder, Text_Serial, Hyperlink_SerialNumber, Button_ImportIntune, Image_Intune
+Global Frame_BulkRemote, Label_MachineNames, Editor_MachineNames, Button_BrowseMachines
+Global Button_BulkCollectSave, Button_BulkImportIntune, Label_BulkStatus, ListView_BulkStatus
 
 Global Img_MainWindow_0, Img_MainWindow_1, Img_MainWindow_2, Img_MainWindow_3
 
@@ -32,8 +34,11 @@ Declare Import_HashID_Intune(EventType)
 Declare Export_HashID_CSV(EventType)
 Declare Clipboard_SerialNumber(EventType)
 Declare Open_HashID_ExportFolder(EventType)
+Declare BulkImport_LoadMachinesFromFile(EventType)
+Declare BulkImport_StartCollection(EventType)
+Declare BulkImport_StartCollectionOnline(EventType)
 
-Procedure OpenMainWindow(x = 0, y = 0, width = 530, height = 410)
+Procedure OpenMainWindow(x = 0, y = 0, width = 530, height = 620)
   MainWindow = OpenWindow(#PB_Any, x, y, width, height, "Windows Autopilot Import Tool for Intune - TUGI", #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_ScreenCentered)
   Image_ComputerIcon = ImageGadget(#PB_Any, 20, 20, 128, 128, ImageID(Img_MainWindow_0))
   Text_Introduction = TextGadget(#PB_Any, 170, 30, 340, 40, "This tool helps you easily and quickly import the running Windows into Microsoft Intune to use Windows Autopilot.")
@@ -56,6 +61,19 @@ Procedure OpenMainWindow(x = 0, y = 0, width = 530, height = 410)
   GadgetToolTip(Hyperlink_SerialNumber, "Copy serial number to clipboard.")
   Button_ImportIntune = ButtonGadget(#PB_Any, 280, 300, 210, 30, "Import to Intune")
   Image_Intune = ImageGadget(#PB_Any, 360, 230, 48, 48, ImageID(Img_MainWindow_3))
+  ; --- Bulk Remote Import frame ---
+  Frame_BulkRemote        = FrameGadget(#PB_Any, 20, 420, 490, 185, "Bulk Remote Import")
+  Label_MachineNames      = TextGadget(#PB_Any, 30, 445, 200, 16, "Machine Names (one per line):")
+  Editor_MachineNames     = EditorGadget(#PB_Any, 30, 463, 330, 80)
+  Button_BrowseMachines   = ButtonGadget(#PB_Any, 370, 463, 130, 30, "Browse .txt/.csv")
+  Button_BulkCollectSave  = ButtonGadget(#PB_Any, 30, 555, 210, 30, "Collect && Save CSV")
+  Button_BulkImportIntune = ButtonGadget(#PB_Any, 250, 555, 240, 30, "Collect && Import to Intune")
+  Label_BulkStatus        = TextGadget(#PB_Any, 30, 590, 480, 18, "")
+  ListView_BulkStatus     = ListViewGadget(#PB_Any, 30, 463, 470, 80)
+  AddGadgetColumn(ListView_BulkStatus, 0, "Machine", 160)
+  AddGadgetColumn(ListView_BulkStatus, 1, "Status",   80)
+  AddGadgetColumn(ListView_BulkStatus, 2, "Serial",  230)
+  HideGadget(ListView_BulkStatus, #True)
 EndProcedure
 
 Procedure MainWindow_Events(event)
@@ -76,7 +94,13 @@ Procedure MainWindow_Events(event)
         Case Hyperlink_SerialNumber
           Clipboard_SerialNumber(EventType())          
         Case Button_ImportIntune
-          Import_HashID_Intune(EventType())          
+          Import_HashID_Intune(EventType())
+        Case Button_BrowseMachines
+          BulkImport_LoadMachinesFromFile(EventType())
+        Case Button_BulkCollectSave
+          BulkImport_StartCollection(EventType())
+        Case Button_BulkImportIntune
+          BulkImport_StartCollectionOnline(EventType())
       EndSelect
   EndSelect
   ProcedureReturn #True

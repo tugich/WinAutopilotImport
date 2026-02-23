@@ -18,6 +18,26 @@ The scripts are based on the official Microsoft article with some modifications 
 - PowerShell: NuGet (Package Manager)
 - PowerShell: Get-WindowsAutopilotInfo (Module)
 
+### Bulk Remote Import — Additional Prerequisites
+
+The **Bulk Remote Import** feature collects hardware hashes from multiple machines simultaneously using PowerShell Remoting (WinRM).
+
+**On each remote target machine** (run once as Administrator):
+```powershell
+Enable-PSRemoting -Force
+```
+This enables WinRM and opens the necessary firewall rules. On domain-joined machines, group policy may already handle this.
+
+**Network requirements:**
+- TCP 5985 (HTTP) or 5986 (HTTPS) must be reachable from the machine running WinAutopilotImport to each target machine.
+- Domain firewall rules typically allow this automatically between domain-joined machines.
+
+**Account requirements:**
+- The account running WinAutopilotImport must have local administrator rights on each remote target machine.
+- In a domain environment, a Domain Admin or delegated Intune admin account satisfies this.
+
+**Output:** Merged hardware hash CSV is saved to `C:\HWID\BulkAutopilotHWID.csv`.
+
 ### Installation
 You can download the latest release via GitHub - No installation is required to use this application.
 
